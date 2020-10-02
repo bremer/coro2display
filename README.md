@@ -12,7 +12,7 @@ This project was heavily inspired by [ideas from Umwelt-Campus Birkenfeld](https
 
 You can also find a good overview of the topic by Rainer Winkler here: [Recommendations for use of CO2 sensors to control room air quality during the COVID-19 pandemic](https://medium.com/@rainer.winkler.poaceae/recommendations-for-use-of-co2-sensors-to-control-room-air-quality-during-the-covid-19-pandemic-c04cac6644d0).
 
-![coro2sens overview](coro2sens.jpeg)
+![coro2sens overview](coro2display.jpeg)
 
 
 ## Sensors
