@@ -1,14 +1,12 @@
-# CorO₂Display
+# CorO₂Sens
 
 Build a simple device that warns if CO₂ concentration in a room becomes a risk for COVID-19 aerosol infections.
-
-Forked from [CorO₂Sens](https://github.com/kmetz/coro2sens) by Kaspar Metz.
 
 - Measures CO₂ concentration in room air.
 - Controls an RGB LED (green, yellow, red, like a traffic light).
 - A buzzer can be connected that alarms if levels are critical.
 - Also opens a WiFi portal which shows current readings and a graph (not connected to the internet).
-- Displays current CO₂, temperature and pressure values on a small display (optional) 
+- Displays current CO₂ concentration, temperature and pressure values on a small display (optional) 
 - Can be built for ~ $60 / 50€ (parts cost).
 
 This project was heavily inspired by [ideas from Umwelt-Campus Birkenfeld](https://www.umwelt-campus.de/forschung/projekte/iot-werkstatt/ideen-zur-corona-krise).
