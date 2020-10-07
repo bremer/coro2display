@@ -1,11 +1,14 @@
-# CorO₂Sens
+# CorO₂Display
 
 Build a simple device that warns if CO₂ concentration in a room becomes a risk for COVID-19 aerosol infections.
+
+Forked from [CorO₂Sens](https://github.com/kmetz/coro2sens) by Kaspar Metz.
 
 - Measures CO₂ concentration in room air.
 - Controls an RGB LED (green, yellow, red, like a traffic light).
 - A buzzer can be connected that alarms if levels are critical.
 - Also opens a WiFi portal which shows current readings and a graph (not connected to the internet).
+- Displays current CO₂, temperature and pressure values on a small display (optional) 
 - Can be built for ~ $60 / 50€ (parts cost).
 
 This project was heavily inspired by [ideas from Umwelt-Campus Birkenfeld](https://www.umwelt-campus.de/forschung/projekte/iot-werkstatt/ideen-zur-corona-krise).
@@ -13,6 +16,8 @@ This project was heavily inspired by [ideas from Umwelt-Campus Birkenfeld](https
 You can also find a good overview of the topic by Rainer Winkler here: [Recommendations for use of CO2 sensors to control room air quality during the COVID-19 pandemic](https://medium.com/@rainer.winkler.poaceae/recommendations-for-use-of-co2-sensors-to-control-room-air-quality-during-the-covid-19-pandemic-c04cac6644d0).
 
 ![coro2sens overview](coro2display.jpeg)
+
+![optional diplay](ssd1306content.jpeg)
 
 
 ## Sensors
@@ -44,20 +49,21 @@ ESP32 has bluetooth, for future expansion.
 1. 1 [NeoPixel](https://www.adafruit.com/category/168) compatible RGB LED (WS2812B, like the V2 Flora RGB Smart NeoPixel LED, you can also remove one from a larger strip which might be cheaper).
 1. A 3V piezo buzzer or a small speaker.
 1. Optional: [Bosch BME280](https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/) I<sup>2</sup>C sensor module (like the GY-BME280 board), for  air pressure compensation, improves accuracy (less than $5 / 4€).   
+1. Optional: [SSD1306](https://learn.adafruit.com/monochrome-oled-breakouts/overview) 128x64 pixel OLED (Tested only on ESP32)
 1. A nice case :) Make shure the sensor has enough air flow.
 
 
 ### Wiring
 
-| ESP8266 pin  | ESP32 pin     | goes to                                    |
-|:-------------|:--------------|:-------------------------------------------|
-| 3V3          | 3V3           | SCD30 VIN, BME280 VIN                      |
-| 5V           | 5V            | LED +5V                                    |
-| GND          | GND           | SCD30 GND, BME280 GND, LED GND, Buzzer (-) |
-| SCL / D1     | SCL / GPIO 22 | SCD30 SCL, BME280 SCL                      |
-| SDA / D2     | SDA / GPIO 21 | SCD30 SDA, BME280 SDA                      |
-| GPIO 0 / D3  | GPIO 16       | LED DIN                                    |
-| GPIO 14 / D5 | GPIO 19       | Buzzer (+)                                 |
+| ESP8266 pin  | ESP32 pin     | goes to                                                 |
+|:-------------|:--------------|:--------------------------------------------------------|
+| 3V3          | 3V3           | SCD30 VIN, BME280 VIN, SSD1306 VIN                      |
+| 5V           | 5V            | LED +5V                                                 |
+| GND          | GND           | SCD30 GND, BME280 GND, LED GND, SSD1306 GND, Buzzer (-) |
+| SCL / D1     | SCL / GPIO 22 | SCD30 SCL, BME280 SCL, SSD1306 SCL                      |
+| SDA / D2     | SDA / GPIO 21 | SCD30 SDA, BME280 SDA, SSD1306 SDA                      |
+| GPIO 0 / D3  | GPIO 16       | LED DIN                                                 |
+| GPIO 14 / D5 | GPIO 19       | Buzzer (+)                                              |
 
 
 ### Flashing the ESP using [PlatfomIO](https://platformio.org/)
@@ -79,10 +85,16 @@ ESP32 has bluetooth, for future expansion.
   - For ESP8266:
     - `SparkFun BME280`
     - `FastLED`
+    - `adafruit/Adafruit SSD1306`
+	  - `adafruit/Adafruit GFX Library`
+	  - `adafruit/Adafruit BusIO`
   - For ESP32:
     - `SparkFun SCD30 Arduino Library`
     - `SparkFun BME280`
     - `FastLED`
+    - `adafruit/Adafruit SSD1306`
+	  - `adafruit/Adafruit GFX Library`
+	  - `adafruit/Adafruit BusIO`
 - Install the following external libraries:  
   (download .zip file, then import it via *Sketch –> Include Library –> Add .ZIP Library...*)
   - For ESP8266:
