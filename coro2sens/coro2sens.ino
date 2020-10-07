@@ -12,7 +12,7 @@
 // (https://www.umweltbundesamt.de/sites/default/files/medien/pdfs/kohlendioxid_2008.pdf)
 //
 #define CO2_WARN_PPM 800
-#define CO2_CRITICAL_PPM 1000
+#define CO2_CRITICAL_PPM 1400
 
 // LED warning light (always on, green / yellow / red).
 #if defined(ESP32)
@@ -48,16 +48,16 @@
 
 // 1 = captive portal hotspot without internet connection, showing data when you connect with it.
 // 0 = WiFi client, showing data when accessed via IP address.
-#define WIFI_HOTSPOT_MODE 1
+#define WIFI_HOTSPOT_MODE 0
 
 // AP name when WIFI_HOTSPOT_MODE is 1
 #define WIFI_HOTSPOT_NAME "coro2sens"
 
 // Credentials when WIFI_HOTSPOT_MODE is 0
-#define WIFI_CLIENT_SSID "your WiFi name"
-#define WIFI_CLIENT_PASSWORD "*****"
+#define WIFI_CLIENT_SSID "euklid"
+#define WIFI_CLIENT_PASSWORD "28306018871092604401"
 
-// How long the graph/log in the WiFi portal should go back, in minutes.
+// How long the graph/log in the WiFi portal and on display should go back, in minutes.
 #define LOG_MINUTES 60
 // Label describing the time axis.
 #define TIME_LABEL "1 hour"
@@ -212,7 +212,7 @@ void setup() {
     display.display(); 
    } else {
     Serial.println("SSD1306 display not detected. Please check wiring. Continuing without external display.");
-  }
+   }
 
 #if WIFI_ENABLED
   // Initialize WiFi, DNS and web server.
