@@ -65,6 +65,10 @@
 // Activity indicator LED (use the built-in LED if your board has one).
 //#define ACTIVITY_LED_PIN 5
 
+// OLED SSD1306
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define SCREEN_GRAPH_HEIGHT 25 // graph height on display 
 // =============================================================================
 
 
@@ -77,6 +81,8 @@
 #include <Wire.h>
 #include <FastLED.h>
 #include <SparkFunBME280.h>
+#include <Adafruit_SSD1306.h>
+
 
 #if defined(ESP32)
   #include <SparkFun_SCD30_Arduino_Library.h>
@@ -124,6 +130,9 @@ DNSServer dnsServer;
 void handleCaptivePortal(AsyncWebServerRequest *request);
 #endif
 
+// SSD1306 display connected to I2C
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+bool ssd1306isConnected = false;
 
 /**
  * Triggered once when the CO2 level goes critical.
@@ -168,8 +177,7 @@ void setup() {
   Wire.begin();
   if (scd30.begin(Wire)) {
     Serial.println("SCD30 CO2 sensor detected.");
-  }
-  else {
+  } else {
     Serial.println("SCD30 CO2 sensor not detected. Please check wiring. Freezing.");
     delay(UINT32_MAX);
   }
@@ -187,9 +195,23 @@ void setup() {
     bme280.setPressureOverSample(16);
     bme280.setHumidityOverSample(1);
     bme280.setMode(MODE_FORCED);
-  }
-  else {
+  } else {
     Serial.println("BMP280 pressure sensor not detected. Please check wiring. Continuing without ambient pressure compensation.");
+  }
+
+  // Initialize OLED SSD1306
+   if(display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // maybe 0x3D
+    Serial.println("SSD1306 display detected.");
+    ssd1306isConnected = true;
+    delay(1000);
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(10, 20);
+    display.println("coro2display");
+    display.display(); 
+   } else {
+    Serial.println("SSD1306 display not detected. Please check wiring. Continuing without external display.");
   }
 
 #if WIFI_ENABLED
@@ -282,6 +304,8 @@ void loop() {
     FastLED.showColor(CRGB(255, 0, 0)); // Red.
   }
 
+  updateDisplay();
+  
   // Trigger alarms.
   if (co2 >= CO2_CRITICAL_PPM) {
     alarmContinuous();
@@ -301,6 +325,63 @@ void loop() {
   lastMeasureTime = millis();
 }
 
+/**
+ * Updates SSD1306 diplay if connected.
+ */
+void updateDisplay() {
+  if (!ssd1306isConnected) {
+    return;
+  }
+
+  float temp;
+  if (bme280isConnected) {
+    temp = bme280.readTempC();
+  } else {
+    temp = scd30.getTemperature();
+  }
+
+  display.clearDisplay();
+
+  display.setTextSize(2);
+  display.setCursor(0, 0);
+  display.printf("%4d", co2);
+  display.setCursor(55, 8);
+  display.setTextSize(1);
+  display.println("ppm CO2");
+
+  display.setCursor(20, 20);
+  display.printf("%2.1f  C", temp);
+
+  display.setCursor(20, 30);
+  display.printf("%4d  hPa", pressure);
+
+  uint minVal = 250;
+  uint maxVal = CO2_CRITICAL_PPM;
+
+  // draw scale
+  for (uint x = SCREEN_WIDTH / 4; x < SCREEN_WIDTH; x += SCREEN_WIDTH / 4) {
+    display.drawLine(x, SCREEN_HEIGHT - 2, x, SCREEN_HEIGHT - 1, WHITE);
+  }
+  int yWarn = SCREEN_HEIGHT - (int)map(CO2_WARN_PPM, minVal, maxVal, 0, SCREEN_GRAPH_HEIGHT);
+  int yCritical = SCREEN_HEIGHT - (int)map(CO2_CRITICAL_PPM, minVal, maxVal, 0, SCREEN_GRAPH_HEIGHT);
+  display.drawLine(0, yWarn, 1, yWarn, WHITE);
+  display.drawLine(SCREEN_WIDTH - 1, yWarn, SCREEN_WIDTH - 3, yWarn, WHITE);
+  display.drawLine(0, yCritical, 1, yCritical, WHITE);
+  display.drawLine(SCREEN_WIDTH - 1, yCritical, SCREEN_WIDTH - 3, yCritical, WHITE);
+
+  // draw graph
+  for (uint32_t i = 0; i < LOG_SIZE; i += (LOG_SIZE / SCREEN_WIDTH)) {
+    uint32_t val = co2log[(co2logPos + i) % LOG_SIZE];
+    if (val > 0) {
+      int x = (int)map(i, 0, LOG_SIZE, 0, SCREEN_WIDTH + (SCREEN_WIDTH / LOG_SIZE));
+      int y = SCREEN_HEIGHT - (int)map(val, minVal, maxVal, 0, SCREEN_GRAPH_HEIGHT);
+      display.drawPixel(x, y, WHITE);
+      Serial.printf("val=%d x=%d y=%d\n", val, x, y);
+    }
+  }
+
+    display.display();
+}
 
 #if WIFI_ENABLED
 /**
